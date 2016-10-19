@@ -1,9 +1,7 @@
 #include <Wire.h>
-#include <AltSoftSerial.h>
 #include <Servo.h>
 #include <NewPing.h>
 
-AltSoftSerial serieBt;
 const long velocidadBaud = 9600;
 
 const int pinMotorL1 = 5;
@@ -18,8 +16,17 @@ typedef enum { D_ALTO, D_ADELANTE, D_ATRAS, D_IZQUIERDA,
                D_DERECHA
              } DIRECCION;
 
-#define Tigger   7
-#define Echo     6
+typedef enum {
+  PA_NINGUNO, PA_DEAMBULAR,
+} PROCESO_AUTOMATICO;
+
+PROCESO_AUTOMATICO procesoActual = PA_NINGUNO;
+
+unsigned int tiempoInicial = 0;
+unsigned int tiempoEspera = 0;
+
+#define Tigger     9
+#define Echo       8
 #define Medicion 200
 
 NewPing sonar(Tigger, Echo, Medicion);
@@ -32,7 +39,6 @@ void setup() {
   pinMode(pinMotorR2, OUTPUT);
 
   Serial.begin(velocidadBaud);
-  serieBt.begin(velocidadBaud);
   Serial.println(F("Listo"));
 }
 
@@ -41,14 +47,10 @@ void loop() {
 
   if (Serial.available()) {
     dato = Serial.read();
-    //serieBt.write(dato);
     procesarComando(dato);
   }
-  if (serieBt.available()) {
-    dato = serieBt.read();
-    Serial.write(dato);
-    procesarComando(dato);
-  }
+
+  procesosAutomaticos();
 }
 
 void procesarComando(char dato) {
@@ -74,8 +76,11 @@ void procesarComando(char dato) {
     case 'd':
     case 'E':
       controlMotor(D_ALTO);
+      procesoActual = PA_NINGUNO;
       break;
-
+    case 'F':
+      procesoActual = PA_DEAMBULAR;
+      break;
   }
 }
 
@@ -128,3 +133,28 @@ void controlMotor(DIRECCION dir) {
       break;
   }
 }
+
+void procesosAutomaticos() {
+  int tiempoActual = millis();
+
+  switch (procesoActual) {
+    case PA_NINGUNO:
+      break;
+    case PA_DEAMBULAR:
+      if (tiempoEspera > 0) {
+        if (tiempoActual >= tiempoInicial + tiempoEspera)
+          tiempoEspera = 0;
+      }
+      else {
+        if (sonar.ping_cm() < 15) {
+          controlMotor(D_DERECHA);
+          tiempoInicial = tiempoActual;
+          tiempoEspera = 500;
+        }
+        else
+          controlMotor(D_ADELANTE);
+      }
+      break;
+  }
+}
+
