@@ -1,28 +1,28 @@
 #include <Wire.h>
 #include <AltSoftSerial.h>
+#include <Servo.h>
+#include <NewPing.h>
 
 AltSoftSerial serieBt;
+const long velocidadBaud = 9600;
 
 const int pinMotorL1 = 5;
 const int pinMotorL2 = 6;
-//const int pinMotorLP = 3;
 
 const int pinMotorR1 = 10;
 const int pinMotorR2 = 11;
-//const int pinMotorRP = 6;
 
-const int pinTemp = A0;
-
-const long velocidadBaud = 9600;
+const int velocidadPwm = 224;
 
 typedef enum { D_ALTO, D_ADELANTE, D_ATRAS, D_IZQUIERDA,
                D_DERECHA
              } DIRECCION;
 
-const int velocidadPwm = 224;
+#define Tigger   7
+#define Echo     6
+#define Medicion 200
 
-//const long tiempoAvance = 1000;
-//const long tiempoRotacion = 750;
+NewPing sonar(Tigger, Echo, Medicion);
 
 void setup() {
   Wire.begin();
