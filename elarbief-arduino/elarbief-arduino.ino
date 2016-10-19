@@ -16,9 +16,8 @@ typedef enum { D_ALTO, D_ADELANTE, D_ATRAS, D_IZQUIERDA,
                D_DERECHA
              } DIRECCION;
 
-typedef enum {
-  PA_NINGUNO, PA_DEAMBULAR,
-} PROCESO_AUTOMATICO;
+typedef enum { PA_NINGUNO, PA_DEAMBULAR,
+             } PROCESO_AUTOMATICO;
 
 PROCESO_AUTOMATICO procesoActual = PA_NINGUNO;
 
@@ -54,8 +53,7 @@ void loop() {
 }
 
 void procesarComando(char dato) {
-  float tension;
-  float temp;
+  
 
   switch (dato) {
     case 'A': //adelante
